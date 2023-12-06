@@ -126,4 +126,25 @@ program token.aleo {
         let sender_amount: u64 = Mapping::get_or_use(account, sender, 0u64);
         Mapping::set(account, sender, sender_amount - amount);
     }
+
+    transition burn_private(sender: token, amount: u64) -> token {
+         let difference: u64 = sender.amount - amount;
+
+        // Produces a token record with the change amount for the caller.
+        let remaining: token = token {
+            owner: sender.owner,
+            amount: difference,
+        };
+
+        // Output the sender's change record.
+        // Increment the token amount publicly for the token receiver.
+        return remaining then finalize(self.caller, difference);
+    }
+
+    finalize burn_private(sender: address, amount: u64) {
+      let receiver_amount: u64 = Mapping::get_or_use(account, sender, 0u64);
+      Mapping::set(account, sender, amount);
+    }
+
+
 }
